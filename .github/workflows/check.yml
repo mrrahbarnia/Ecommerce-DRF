@@ -16,4 +16,4 @@
           - name: Checkout
             uses: actions/checkout@v2
           - name: Lint And Test
-            run: docker-compose run --rm django sh -c "flake8" && docker-compose run --rm django sh -c "pytest"
+            run: docker-compose run --rm backend sh -c "flake8" && docker-compose run --rm backend sh -c "pytest"
