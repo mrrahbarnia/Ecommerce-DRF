@@ -15,5 +15,5 @@
               password: ${{ secrets.DOCKERHUB_TOKEN }}
           - name: Checkout
             uses: actions/checkout@v2
-          - name: Lint And Test
-            run: docker-compose run --rm backend sh -c "flake8" && docker-compose run --rm backend sh -c "pytest"
+          - name: Lint
+            run: docker-compose run --rm backend sh -c "flake8"

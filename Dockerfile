@@ -13,6 +13,9 @@ RUN apt-get update && \
 
 COPY ./requirements.txt /app/requirements.txt
 
+RUN mkdir -p /vol/web/media && \
+    mkdir -p /vol/web/static
+
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
