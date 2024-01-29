@@ -55,7 +55,10 @@ class UserAdmin(UserAdmin):
     list_display = ("phone_number",)
     fieldsets = (
         (None, {'fields': (
-            "phone_number", "referral_counter", "default_discount", "password"
+            "phone_number", "referral_counter",
+            "referral_code", "default_discount", "otp",
+            "otp_expiry", "used_referral_code",
+            "password"
         )}),
         (_("Permissions"),
             {'fields':

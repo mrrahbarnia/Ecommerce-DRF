@@ -137,3 +137,37 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+# Logging config
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'general.log',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'logger': {
+            'handlers': ['console', 'file'],
+            'level': os.environ.get('DJANGO_LOGGING_LEVEL', 'INFO')
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} ({levelname}) - {name} - {message}',
+            'style': '{'
+        }
+    }
+}
+
+# OTP configuration
+OTP_EXPIRY_FROM_NOW = os.environ.get('OTP_EXPIRY_FROM_NOW', 3)
+
+# Validators config
+MAX_PROFILE_IMAG_SIZE_MB = os.environ.get('MAX_PROFILE_IMAG_SIZE_MB', 5)

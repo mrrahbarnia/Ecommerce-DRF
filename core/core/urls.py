@@ -1,7 +1,10 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import (
+    path,
+    include
+)
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView
@@ -9,6 +12,9 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # ============ Accounts ============ #
+    path('accounts/', include('accounts.api.v1.urls')),
 
     # ============ Swagger API documentation ============ #
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
