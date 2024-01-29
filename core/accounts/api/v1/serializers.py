@@ -1,6 +1,7 @@
 """
 Serializers for Accounts app.
 """
+import uuid
 import random
 from datetime import (
     datetime,
@@ -70,12 +71,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 errors['password'].append(_(error))
         if errors['password'] != []:
             raise serializers.ValidationError(errors)
+
         return super(RegistrationSerializer, self).validate(attrs)
 
     def create(self, validated_data):
         """Creating user objects with encrypted password."""
         otp = random.randint(100000, 999999)
-        # Each SMS is valid for 3 minutes
         otp_expiry = datetime.now() + timedelta(minutes=3)
 
         validated_data.pop('password1')
@@ -88,6 +89,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 **validated_data
             )
             return encrypted_user
+
         else:
             encrypted_user = User.objects.create_user(
                 otp=otp,
@@ -138,3 +140,77 @@ class LoginSerializer(TokenObtainPairSerializer):
         validated_data['referral_code'] = self.user.referral_code
 
         return validated_data
+
+
+class ResendVerificationSerializer(serializers.Serializer):
+    """Serializer for resend verification endpoint."""
+    phone_number = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        phone_number = attrs.get('phone_number', None)
+        try:
+            user = User.objects.get(phone_number=phone_number)
+            otp = random.randint(100000, 999999)
+            user.otp = otp
+            user.save()
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                {'detail': _('There is no user with this phone number.')}
+            )
+
+        # TODO: Sending OTP with provided phone_number here
+
+        return super(ResendVerificationSerializer, self).validate(attrs)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Serializer for changing password for authenticated users."""
+    old_password = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+    new_password1 = serializers.CharField()
+
+    def validate(self, attrs):
+        old_password = attrs.get('old_password', None)
+        new_password = attrs.get('new_password', None)
+        new_password1 = attrs.get('new_password1', None)
+        if new_password != new_password1:
+            raise serializers.ValidationError(
+                {'detail': _('New passwords must be match.')}
+            )
+
+        errors = dict()
+        errors['new_password'] = []
+        try:
+            validate_password(new_password)
+        except exceptions.ValidationError as e:
+            for error in list(e.messages):
+                errors['new_password'].append(_(error))
+        if errors['new_password'] != []:
+            raise serializers.ValidationError(errors)
+
+        attrs['old_password'] = old_password
+        attrs['new_password'] = new_password
+        return super(ChangePasswordSerializer, self).validate(attrs)
+
+
+class ResetPasswordSerializer(ResendVerificationSerializer):
+
+    def validate(self, attrs):
+        phone_number = attrs.get('phone_number', None)
+        try:
+            user = User.objects.get(phone_number=phone_number)
+            temp_pass = self.temp_password()
+            user.set_password(temp_pass)
+            user.save()
+            # TODO: sending new password to the provided phone_number
+
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                {'detail': _('There is no user with this phone number.')}
+            )
+        return super(ResetPasswordSerializer, self).validate(attrs)
+
+    def temp_password(self):
+        """Generate and return string for temporary password."""
+        temp_pass = uuid.uuid4()
+        return str(temp_pass).split('-')[0]
