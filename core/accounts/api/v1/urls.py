@@ -23,7 +23,7 @@ urlpatterns = [
         name='verification'
     ),
     path(
-        'resend/verification/',
+        'resend-otp/',
         views.ResendVerificationApiView.as_view(),
         name='resend-verification'
     ),

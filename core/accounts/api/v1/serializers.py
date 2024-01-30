@@ -86,6 +86,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 otp=otp,
                 otp_expiry=otp_expiry,
                 used_referral_code=True,
+                default_discount=5,
                 **validated_data
             )
 
@@ -152,6 +153,7 @@ class ResendVerificationSerializer(serializers.Serializer):
             user = User.objects.get(phone_number=phone_number)
             otp = random.randint(100000, 999999)
             user.otp = otp
+            user.otp_expiry = datetime.now() + + timedelta(minutes=3)
             user.save()
         except User.DoesNotExist:
             raise serializers.ValidationError(

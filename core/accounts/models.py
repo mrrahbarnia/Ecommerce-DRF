@@ -85,10 +85,6 @@ class User(
 
     objects = CustomUserManager()
 
-    def clean(self):
-        if self.used_referral_code:
-            self.default_discount = 5
-
     def __str__(self):
         return self.phone_number
 
@@ -134,8 +130,6 @@ class Profile(TimeStamp):
         null=True,
         blank=True
     )
-
-    # objects = VerifiedUsers.as_manager()
 
     def get_full_name(self):
         return f'{self.first_name} {self.last_name}'
@@ -216,8 +210,6 @@ class Address(TimeStamp):
         null=True,
         blank=True
     )
-
-    # objects = VerifiedUsers.as_manager()
 
     def entire_address_snippet(self):
         """

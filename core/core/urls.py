@@ -13,8 +13,11 @@ from drf_spectacular.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # ============ Accounts ============ #
+    # ============ Accounts app ============ #
     path('api/v1/accounts/', include('accounts.api.v1.urls')),
+
+    # ============ Product app ============ #
+    path('api/v1/product/', include('product.api.v1.urls')),
 
     # ============ Django debug toolbar URL ============ #
     path("__debug__/", include("debug_toolbar.urls")),
