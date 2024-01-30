@@ -19,7 +19,7 @@ def profile_image_size_validator(file):
     max_size_mb = settings.MAX_PROFILE_IMAG_SIZE_MB
 
     if file.size > max_size_mb * 1024 * 1024:
-        raise ValidationError(f'Max file size is {max_size_mb}MB')
+        raise ValidationError(_(f'Max file size is {max_size_mb}MB'))
 
 
 def age_validator(age):

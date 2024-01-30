@@ -5,10 +5,12 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from rest_framework.generics import GenericAPIView
+from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated
+)
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -18,13 +20,19 @@ from .serializers import (
     LoginSerializer,
     ResendVerificationSerializer,
     ChangePasswordSerializer,
-    ResetPasswordSerializer
+    ResetPasswordSerializer,
+    ProfileSerializer,
+    AddressSerializer
+)
+from ...models import (
+    Profile,
+    Address
 )
 
 logger = logging.getLogger(__name__)
 
 
-class RegistrationApiView(GenericAPIView):
+class RegistrationApiView(generics.GenericAPIView):
     """Registration endpoint."""
     serializer_class = RegistrationSerializer
 
@@ -48,7 +56,7 @@ class RegistrationApiView(GenericAPIView):
         pass
 
 
-class VerificationApiView(GenericAPIView):
+class VerificationApiView(generics.GenericAPIView):
     """Verification endpoint via SMS."""
     serializer_class = VerificationSerializer
 
@@ -64,7 +72,7 @@ class VerificationApiView(GenericAPIView):
         )
 
 
-class ResendVerificationApiView(GenericAPIView):
+class ResendVerificationApiView(generics.GenericAPIView):
     """Resending verification code."""
     serializer_class = ResendVerificationSerializer
 
@@ -84,7 +92,7 @@ class LoginApiView(TokenObtainPairView):
     serializer_class = LoginSerializer
 
 
-class ChangePasswordApiView(GenericAPIView):
+class ChangePasswordApiView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
     model = get_user_model()
     permission_classes = [IsAuthenticated]
@@ -113,7 +121,7 @@ class ChangePasswordApiView(GenericAPIView):
         )
 
 
-class ResetPasswordApiView(GenericAPIView):
+class ResetPasswordApiView(generics.GenericAPIView):
     """Reset password endpoint."""
     serializer_class = ResetPasswordSerializer
 
@@ -124,3 +132,24 @@ class ResetPasswordApiView(GenericAPIView):
             {'detail': _('A temporary password sent for you...Please login with that and change it...')}, # noqa
             status=status.HTTP_200_OK
         )
+
+
+class BaseApiView(generics.RetrieveUpdateAPIView):
+    """Base class for inheriting in ProfileApiView and AddressApiView."""
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        """Retrieving the authenticated user."""
+        return self.queryset.get(user=self.request.user)
+
+
+class ProfileApiView(BaseApiView):
+    """Retrieve and update profile by authenticated user."""
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.select_related('user').all()
+
+
+class AddressApiView(BaseApiView):
+    """Retrieve and update address by authenticated user."""
+    serializer_class = AddressSerializer
+    queryset = Address.objects.select_related('user').all()

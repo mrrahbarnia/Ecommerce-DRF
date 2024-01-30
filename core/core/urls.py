@@ -14,12 +14,15 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # ============ Accounts ============ #
-    path('accounts/', include('accounts.api.v1.urls')),
+    path('api/v1/accounts/', include('accounts.api.v1.urls')),
+
+    # ============ Django debug toolbar URL ============ #
+    path("__debug__/", include("debug_toolbar.urls")),
 
     # ============ Swagger API documentation ============ #
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/', SpectacularAPIView.as_view(), name='schema'),
     path(
-        'api/schema/swagger-ui/',
+        'api/schema/',
         SpectacularSwaggerView.as_view(url_name='schema'),
         name='swagger-ui'
     ),

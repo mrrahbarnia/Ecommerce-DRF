@@ -16,7 +16,9 @@ from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 
 from core.timestamp import TimeStamp
-from .managers import CustomUserManager
+from .managers import (
+    CustomUserManager
+)
 from .validators import (
     phone_validator,
     profile_image_size_validator,
@@ -133,6 +135,8 @@ class Profile(TimeStamp):
         blank=True
     )
 
+    # objects = VerifiedUsers.as_manager()
+
     def get_full_name(self):
         return f'{self.first_name} {self.last_name}'
 
@@ -212,6 +216,8 @@ class Address(TimeStamp):
         null=True,
         blank=True
     )
+
+    # objects = VerifiedUsers.as_manager()
 
     def entire_address_snippet(self):
         """

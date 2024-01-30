@@ -39,6 +39,14 @@ urlpatterns = [
     ),
     path('login/', views.LoginApiView.as_view(), name='login'),
 
+    # ========= JWT ========= #
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
+    # ========= Retrieve and update personal information ========= #
+    path('profile/me/', views.ProfileApiView.as_view(), name='profile'),
+
+    # ======= Retrieve and update the authenticated user's address ======= #
+    path('address/me/', views.AddressApiView.as_view(), name='address'),
+
 ]

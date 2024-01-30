@@ -17,10 +17,10 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-# from ..models import (
-#     Profile,
-#     Address
-# )
+from ...models import (
+    Profile,
+    Address
+)
 
 User = get_user_model()
 
@@ -88,7 +88,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 used_referral_code=True,
                 **validated_data
             )
-            return encrypted_user
 
         else:
             encrypted_user = User.objects.create_user(
@@ -96,7 +95,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 otp_expiry=otp_expiry,
                 **validated_data
             )
-            return encrypted_user
+
+        return encrypted_user
 
 
 class VerificationSerializer(serializers.Serializer):
@@ -122,7 +122,7 @@ class VerificationSerializer(serializers.Serializer):
         if otp_expiry < timezone.now():
             raise serializers.ValidationError(
                 {'detail': _(
-                    'The expiry time of the OTP(one time password) has been reached...Try again.' # noqa
+                    'The expiry time of the OTP(one time password) has been reached...Get a new one.' # noqa
                 )}
             )
         attrs['user'] = user
@@ -194,7 +194,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(ResendVerificationSerializer):
-
+    """Serializer for Reset password endpoint."""
     def validate(self, attrs):
         phone_number = attrs.get('phone_number', None)
         try:
@@ -214,3 +214,39 @@ class ResetPasswordSerializer(ResendVerificationSerializer):
         """Generate and return string for temporary password."""
         temp_pass = uuid.uuid4()
         return str(temp_pass).split('-')[0]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """Profile objects serializer."""
+    phone_number = serializers.CharField(
+        source='user.phone_number', read_only=True
+    )
+    # Showing referral code to users for using in front-end
+    referral_code = serializers.CharField(
+        source='user.referral_code', read_only=True
+    )
+
+    class Meta:
+        model = Profile
+        fields = [
+            'phone_number', 'email', 'first_name',
+            'last_name', 'age', 'image', 'referral_code'
+        ]
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    """Address objects serializer."""
+    phone_number = serializers.CharField(
+        source='user.phone_number', read_only=True
+    )
+    address_snippet = serializers.CharField(
+        source='entire_address_snippet', read_only=True
+    )
+
+    class Meta:
+        model = Address
+        fields = [
+            'phone_number', 'province', 'city', 'street', 'alley',
+            'floor', 'house_number', 'zip_code', 'telephone_number',
+            'entire_address', 'address_snippet'
+        ]
