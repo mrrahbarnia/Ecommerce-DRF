@@ -5,6 +5,7 @@ import os
 import uuid
 
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
@@ -18,6 +19,8 @@ from .managers import Active
 from core.timestamp import TimeStamp
 
 User = get_user_model()
+
+# TODO: db_index and some validations on fields
 
 
 def product_img_file_path(instance, filename):
@@ -41,14 +44,22 @@ class Brand(TimeStamp):
     """
     This class defines attributes of the Brand model.
     """
-    name = models.CharField(_('brand name'), max_length=None)
+    name = models.CharField(
+        _('brand name'),
+        max_length=None,
+        unique=True
+    )
     slug = AutoSlugField(
         populate_from='name',
         editable=False,
         always_update=True
     )
     discount = models.IntegerField(_('brand discount'), default=0)
-    description = models.TextField(_('brand description'))
+    description = models.TextField(
+        _('brand description'),
+        null=True,
+        blank=True
+    )
     is_active = models.BooleanField(default=True)
 
     objects = Active.as_manager()
@@ -61,14 +72,22 @@ class Category(MPTTModel, TimeStamp):
     """
     This class defines attributes of the Category model.
     """
-    name = models.CharField(_('category name'), max_length=None)
+    name = models.CharField(
+        _('category name'),
+        max_length=None,
+        unique=True
+    )
     slug = AutoSlugField(
         populate_from='name',
         editable=False,
         always_update=True
     )
     discount = models.IntegerField(_('category discount'), default=0)
-    description = models.TextField(_('category description'))
+    description = models.TextField(
+        _('category description'),
+        null=True,
+        blank=True
+    )
     is_active = models.BooleanField(default=True)
     parent = TreeForeignKey(
         'self', on_delete=models.PROTECT, null=True, blank=True
@@ -78,6 +97,9 @@ class Category(MPTTModel, TimeStamp):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name_plural = 'categories'
 
 
 class ProductImage(TimeStamp):
@@ -90,7 +112,7 @@ class ProductImage(TimeStamp):
         related_name='product_image'
     )
     url = models.ImageField(
-        _('product image URL'),
+        _('product image'),
         upload_to=product_img_file_path
     )
     alt_text = models.CharField(
@@ -98,7 +120,6 @@ class ProductImage(TimeStamp):
         max_length=None,
         null=True,
         blank=True,
-        default=''
     )
 
     def __str__(self):
@@ -110,7 +131,11 @@ class Attribute(TimeStamp):
     This class defines attributes of the Attribute model.
     """
     name = models.CharField(_('attribute name'), max_length=None)
-    description = models.TextField(_('description'))
+    description = models.TextField(
+        _('description'),
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return self.name
@@ -139,7 +164,7 @@ class Product(TimeStamp):
         editable=False,
         always_update=True
     )
-    description = models.TextField(_('description'))
+    description = models.TextField(_('description'), null=True, blank=True)
     sku = models.CharField(
         _('sku'),
         max_length=16,
@@ -187,8 +212,10 @@ class ProductType(TimeStamp):
         editable=False,
         always_update=True
     )
-    parent = TreeForeignKey(
-        'self', on_delete=models.PROTECT, null=True, blank=True
+    description = models.TextField(
+        _('description'),
+        null=True,
+        blank=True
     )
     discount = models.IntegerField(_('discount'), default=0)
     attribute = models.ManyToManyField(
@@ -202,6 +229,10 @@ class ProductType(TimeStamp):
 
 
 class ProductAttributeValue(TimeStamp):
+    """
+    Link table for many to many relations
+    between Product and AttributeValue models.
+    """
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
@@ -213,11 +244,41 @@ class ProductAttributeValue(TimeStamp):
         related_name='attr_value_product_attribute_value'
     )
 
+    def clean(self):
+        """
+        Preventing from entering two same
+        attributes to a specific product.
+        """
+        qs = ProductAttributeValue.objects.filter(product=self.product).filter(
+            attribute_value=self.attribute_value
+        ).exists()
+
+        if not qs:
+            attributes = Attribute.objects.filter(
+                attribute_value__product_attribute_value=self.product
+            ).values_list('name', flat=True)
+            if self.attribute_value.attribute.name in list(attributes):
+                raise ValidationError(_('Duplicate attribute exists.'))
+
+    def save(self, *args, **kwargs):
+        """Ensure executing clean function."""
+        self.full_clean()
+        return super().save()
+
+    def __str__(self):
+        return f'{self.product} => \
+            {self.attribute_value.attribute.name}: \
+                {self.attribute_value.value}'
+
     class Meta:
         unique_together = ('product', 'attribute_value')
 
 
 class ProductTypeAttribute(TimeStamp):
+    """
+    Link table for many to many relations
+    between ProductType and Attribute models.
+    """
     product_type = models.ForeignKey(
         ProductType,
         on_delete=models.CASCADE,
@@ -228,6 +289,9 @@ class ProductTypeAttribute(TimeStamp):
         on_delete=models.CASCADE,
         related_name='link_attribute_product_type'
     )
+
+    def __str__(self):
+        return f'{self.product_type}=> Attribute: {self.attribute}'
 
     class Meta:
         unique_together = ('product_type', 'attribute')
