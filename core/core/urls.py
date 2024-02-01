@@ -10,9 +10,21 @@ from drf_spectacular.views import (
     SpectacularSwaggerView
 )
 
+# Health Check for CICD automation
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+
+class HealthCheck(APIView):
+
+    def get(self, request, *args, **kwargs):
+        return Response("CICD process works correctly.")
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    # ============ CICD Health Check ============ #
+    path('health-check/', HealthCheck.as_view()),
     # ============ Accounts app ============ #
     path('api/v1/accounts/', include('accounts.api.v1.urls')),
 
