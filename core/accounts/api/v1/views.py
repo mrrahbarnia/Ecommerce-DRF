@@ -1,8 +1,6 @@
 """
 Accounts app view's.
 """
-import logging
-
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics
@@ -28,8 +26,6 @@ from ...models import (
     Profile,
     Address
 )
-
-logger = logging.getLogger(__name__)
 
 
 class RegistrationApiView(generics.GenericAPIView):

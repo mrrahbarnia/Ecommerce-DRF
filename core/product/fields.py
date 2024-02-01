@@ -7,46 +7,42 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 class OrderField(models.PositiveIntegerField):
-    """
-    Custom field for generating ordering number for a specific field.
-    """
-    def __init__(self, unique_for_field, *args, **kwargs):
+    """Custom field for generating order number automatically
+    with a custom attribute named unique_for_field."""
+
+    description = "Ordering field on a specific field."
+
+    def __init__(self, unique_for_field=None, *args, **kwargs):
         self.unique_for_field = unique_for_field
         super().__init__(*args, **kwargs)
 
     def check(self, **kwargs):
-        """Validating the custom field named OrderField."""
+        """Check some additional validation."""
         return [
             *super().check(**kwargs),
-            *self._check_unique_for_field(self, **kwargs)
+            *self._check_for_field_attribute(**kwargs),
         ]
 
-    def _check_unique_for_field(self, **kwargs):
-        """Validating unique_for_field attribute for this custom field."""
+    def _check_for_field_attribute(self, **kwargs):
+        """Validate the unique_for_field attribute."""
         if self.unique_for_field is None:
-            """Returning error if 'unique_for_field' is none."""
             return [
-                checks.ERROR(
-                    "'unique_for_field' attribute must be set in OrderField."
+                checks.Error(
+                    "OrderField must define the 'unique_for_field' attribute."
                 )
             ]
         elif self.unique_for_field not in [
             field.name for field in self.model._meta.get_fields()
         ]:
-            """
-            Returning error if the value of
-            'unique_for_field' not in the model fields.
-            """
             return [
-                checks.ERROR(
+                checks.Error(
                     """
-                    Value of the 'unique_for field'
-                    doesn't match to any field name.
+                    OrderField entered does not
+                    match an existing model field.
                     """
                 )
             ]
-        else:
-            return []
+        return []
 
     def pre_save(self, model_instance, add):
         """Generating the order field automatically according

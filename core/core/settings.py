@@ -117,10 +117,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-
+STATIC_URL = '/static/static/'
 STATIC_ROOT = '/vol/web/static'
+
+MEDIA_URL = '/media/media/'
 MEDIA_ROOT = '/vol/web/media'
 
 STATICFILES_DIRS = [
@@ -145,34 +145,6 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# Logging config
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': 'general.log',
-            'formatter': 'verbose'
-        },
-    },
-    'loggers': {
-        'logger': {
-            'handlers': ['console', 'file'],
-            'level': os.environ.get('DJANGO_LOGGING_LEVEL', 'INFO')
-        },
-    },
-    'formatters': {
-        'verbose': {
-            'format': '{asctime} ({levelname}) - {name} - {message}',
-            'style': '{'
-        }
-    }
-}
-
 # OTP configuration
 OTP_EXPIRY_FROM_NOW = os.environ.get('OTP_EXPIRY_FROM_NOW', 3)
 
@@ -192,3 +164,14 @@ if DEBUG:
     import socket
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
+
+# Cache config
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

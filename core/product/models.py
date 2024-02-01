@@ -15,6 +15,7 @@ from mptt.models import (
     MPTTModel
 )
 
+from .fields import OrderField
 from .managers import Active
 from core.timestamp import TimeStamp
 
@@ -121,6 +122,21 @@ class ProductImage(TimeStamp):
         null=True,
         blank=True,
     )
+    order = OrderField(unique_for_field='product', blank=True)
+
+    def clean(self, exclude=None):
+        """Validating multiple fields with clean_fields
+        method for preventing from inserting duplicate values."""
+        queryset = ProductImage.objects.filter(product=self.product)
+
+        for object in queryset:
+            if self.id != object.id and self.order == object.order:
+                raise ValidationError("Duplicate value.")
+
+    def save(self, *args, **kwargs):
+        """Save method for running clean method."""
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.url
