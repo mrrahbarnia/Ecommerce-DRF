@@ -31,6 +31,7 @@
             password: ${{ secrets.PASSWORD }}
             host: ${{ secrets.HOST }}
             port: ${{ secrets.PORT }}
+            command_timeout: 200m
             script: |
               cd ${{ secrets.PROJECT_PATH }}
               docker-compose -f docker-compose-deploy.yml down
