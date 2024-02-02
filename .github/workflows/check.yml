@@ -39,5 +39,5 @@
               docker rmi $(docker image ls -q)
               git pull
               docker-compose -f docker-compose-deploy.yml build
-              docker-compose -f docker-compose-deploy.yml up
+              docker-compose -f docker-compose-deploy.yml up -d
 
