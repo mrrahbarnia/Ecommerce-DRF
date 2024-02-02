@@ -56,8 +56,8 @@ class UserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': (
             "phone_number", "referral_counter",
-            "referral_code", "default_discount", "otp",
-            "otp_expiry", "used_referral_code",
+            "referral_code", "default_discount",
+            "used_referral_code",
             "password"
         )}),
         (_("Permissions"),

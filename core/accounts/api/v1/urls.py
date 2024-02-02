@@ -10,7 +10,6 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView
 )
 
-
 urlpatterns = [
     path(
         'registration/',
@@ -24,7 +23,7 @@ urlpatterns = [
     ),
     path(
         'resend-otp/',
-        views.ResendVerificationApiView.as_view(),
+        views.ResendOtpApiView.as_view(),
         name='resend-verification'
     ),
     path(

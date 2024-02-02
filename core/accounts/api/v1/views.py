@@ -1,6 +1,7 @@
 """
 Accounts app view's.
 """
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics
@@ -16,7 +17,7 @@ from .serializers import (
     RegistrationSerializer,
     VerificationSerializer,
     LoginSerializer,
-    ResendVerificationSerializer,
+    ResendOtpSerializer,
     ChangePasswordSerializer,
     ResetPasswordSerializer,
     ProfileSerializer,
@@ -36,9 +37,6 @@ class RegistrationApiView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        phone_number = serializer.validated_data.get('phone_number', None)
-        if phone_number:
-            self.send_otp(phone_number=phone_number)
 
         return Response(
             {'detail': _(
@@ -46,10 +44,6 @@ class RegistrationApiView(generics.GenericAPIView):
             )},
             status=status.HTTP_200_OK
         )
-
-    def send_otp(self, phone_number):
-        # Sending OTP
-        pass
 
 
 class VerificationApiView(generics.GenericAPIView):
@@ -60,17 +54,20 @@ class VerificationApiView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data.get('user', None)
-        user.is_verified = True
-        user.save()
+        otp = serializer.validated_data.get('otp', None)
+        if user and otp:
+            user.is_verified = True
+            user.save()
+            cache.delete(otp)
         return Response(
             {'detail': _('Your account verified successfully.')},
             status=status.HTTP_200_OK
         )
 
 
-class ResendVerificationApiView(generics.GenericAPIView):
+class ResendOtpApiView(generics.GenericAPIView):
     """Resending verification code."""
-    serializer_class = ResendVerificationSerializer
+    serializer_class = ResendOtpSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
