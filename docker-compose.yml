@@ -19,10 +19,12 @@ services:
                python manage.py runserver 0.0.0.0:8000"
     environment:
       - DB_HOST=db
-      - DB_NAME=devdb
-      - DB_USER=devuser
+      - DB_NAME=dev-db
+      - DB_USER=dev-user
       - DB_PASS=changeme
-      - DJANGO_LOGGING_LEVEL=INFO
+      - SECRET_KEY=test
+      - ALLOWED_HOSTS=127.0.0.1 *
+      - DEBUG=1
     volumes:
       - ./core:/app/
       - dev-static-data:/vol/web/static
@@ -41,8 +43,8 @@ services:
     volumes:
       - dev-db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=devdb
-      - POSTGRES_USER=devuser
+      - POSTGRES_DB=dev-db
+      - POSTGRES_USER=dev-user
       - POSTGRES_PASSWORD=changeme
     ports:
       - 5432:5432

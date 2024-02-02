@@ -32,4 +32,7 @@
             host: ${{ secrets.HOST }}
             port: ${{ secrets.PORT }}
             script: |
-              ls -la
+              cd ${{ secrets.PROJECT_PATH }}
+              docker-compose -f docker-compose-deploy.yml down
+              git pull
+              docker-compose -f docker-compose-deploy.yml up
