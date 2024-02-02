@@ -17,22 +17,26 @@
             uses: actions/checkout@v2
           - name: Lint
             run: docker-compose run --rm backend sh -c "flake8"
-      # Deploy:
-      #   if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-      #   name: Deploy
-      #   needs: Lint
-      #   runs-on: ubuntu-20.04
-      #   steps:
-      #   - uses: actions/checkout@v3
-      #   - name: Connect and execute commands
-      #     uses: appleboy/ssh-action@master
-      #     with:
-      #       username: ${{ secrets.USERNAME }}
-      #       password: ${{ secrets.PASSWORD }}
-      #       host: ${{ secrets.HOST }}
-      #       port: ${{ secrets.PORT }}
-      #       script: |
-      #         cd ${{ secrets.PROJECT_PATH }}
-      #         docker-compose -f docker-compose-deploy.yml down
-      #         git pull
-      #         docker-compose -f docker-compose-deploy.yml up
+      Deploy:
+        if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+        name: Deploy
+        needs: Lint
+        runs-on: ubuntu-20.04
+        steps:
+        - uses: actions/checkout@v3
+        - name: Connect and execute commands
+          uses: appleboy/ssh-action@master
+          with:
+            username: ${{ secrets.USERNAME }}
+            password: ${{ secrets.PASSWORD }}
+            host: ${{ secrets.HOST }}
+            port: ${{ secrets.PORT }}
+            script: |
+              cd ${{ secrets.PROJECT_PATH }}
+              docker-compose -f docker-compose-deploy.yml down
+              docker container rm -f $(docker container ls -q)
+              docker rmi $(docker image ls -q)
+              git pull
+              docker-compose -f docker-compose-deploy.yml build
+              docker-compose -f docker-compose-deploy.yml up
+

@@ -11,6 +11,7 @@ from datetime import (
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
+from django.core.cache import cache
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
 from django.utils.translation import gettext_lazy as _
