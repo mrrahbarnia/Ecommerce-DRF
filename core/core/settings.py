@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'django_filters',
     'mptt',
     'accounts',
     'product',
@@ -204,4 +205,9 @@ LOGGING = {
             'style': '{'
         }
     }
+}
+
+# Spectacular config for uploading images via browsable interface
+SPECTACULAR_SETTINGS = {
+    'COMPONENT_SPLIT_REQUEST': True,
 }

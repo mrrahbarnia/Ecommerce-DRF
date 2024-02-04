@@ -6,22 +6,27 @@ import uuid
 
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-
-from autoslug import AutoSlugField
-from mptt.models import (
-    TreeForeignKey,
-    MPTTModel
+from django.utils.text import Truncator
+from django_lifecycle import (
+    LifecycleModel,
+    hook,
+    AFTER_DELETE,
+    AFTER_SAVE
 )
 
+from autoslug import AutoSlugField
+
 from .fields import OrderField
-from .managers import Active
+from .managers import (
+    Active,
+    CustomManager
+)
 from core.timestamp import TimeStamp
 
 User = get_user_model()
-
-# TODO: db_index and some validations on fields
 
 
 def product_img_file_path(instance, filename):
@@ -52,10 +57,11 @@ class Brand(TimeStamp):
     )
     slug = AutoSlugField(
         populate_from='name',
+        db_index=True,
         editable=False,
         always_update=True
     )
-    discount = models.IntegerField(_('brand discount'), default=0)
+    discount = models.PositiveIntegerField(_('brand discount'), default=0)
     description = models.TextField(
         _('brand description'),
         null=True,
@@ -65,42 +71,13 @@ class Brand(TimeStamp):
 
     objects = Active.as_manager()
 
-    def __str__(self):
-        return self.name
-
-
-class Category(MPTTModel, TimeStamp):
-    """
-    This class defines attributes of the Category model.
-    """
-    name = models.CharField(
-        _('category name'),
-        max_length=None,
-        unique=True
-    )
-    slug = AutoSlugField(
-        populate_from='name',
-        editable=False,
-        always_update=True
-    )
-    discount = models.IntegerField(_('category discount'), default=0)
-    description = models.TextField(
-        _('category description'),
-        null=True,
-        blank=True
-    )
-    is_active = models.BooleanField(default=True)
-    parent = TreeForeignKey(
-        'self', on_delete=models.PROTECT, null=True, blank=True
-    )
-
-    objects = Active.as_manager()
+    def desc_snippet(self):
+        """Return snippet for description fields."""
+        truncated_desc = Truncator(self.description).words(12)
+        return truncated_desc
 
     def __str__(self):
         return self.name
-
-    class Meta:
-        verbose_name_plural = 'categories'
 
 
 class ProductImage(TimeStamp):
@@ -110,7 +87,7 @@ class ProductImage(TimeStamp):
     product = models.ForeignKey(
         'Product',
         on_delete=models.CASCADE,
-        related_name='product_image'
+        related_name='images'
     )
     url = models.ImageField(
         _('product image'),
@@ -139,18 +116,15 @@ class ProductImage(TimeStamp):
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.url
+        return f"'{self.product.name}'=> PATH: {self.url}"
 
 
 class Attribute(TimeStamp):
     """
     This class defines attributes of the Attribute model.
     """
-    name = models.CharField(_('attribute name'), max_length=None)
-    description = models.TextField(
-        _('description'),
-        null=True,
-        blank=True
+    name = models.CharField(
+        _('attribute name'), max_length=None
     )
 
     def __str__(self):
@@ -170,13 +144,14 @@ class AttributeValue(TimeStamp):
         return f'{self.attribute.name}: {self.value}'
 
 
-class Product(TimeStamp):
+class Product(LifecycleModel, TimeStamp):
     """
     This class defines attributes of the Product model.
     """
     name = models.CharField(_('product name'), max_length=None)
     slug = AutoSlugField(
         populate_from='name',
+        db_index=True,
         editable=False,
         always_update=True
     )
@@ -188,16 +163,11 @@ class Product(TimeStamp):
         default=sku_generator
     )
     stock = models.IntegerField(_('stock quantity'), default=0)
-    price = models.DecimalField(_('price'), max_digits=19, decimal_places=4)
-    discount = models.IntegerField(_('discount'), default=0)
-    category = TreeForeignKey(
-        Category,
-        on_delete=models.PROTECT,
-        related_name='product'
-    )
+    price = models.DecimalField(_('price'), max_digits=20, decimal_places=3)
+    discount = models.PositiveIntegerField(_('discount'), default=0)
     brand = models.ForeignKey(
         Brand,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='brand'
     )
     product_type = models.ForeignKey(
@@ -212,7 +182,22 @@ class Product(TimeStamp):
         through='ProductAttributeValue'
     )
 
-    objects = Active.as_manager()
+    objects = CustomManager()
+    # objects = Active.as_manager()
+    
+
+    @hook(AFTER_SAVE)
+    @hook(AFTER_DELETE)
+    def invalid_cache(self):
+        """
+        Invalidating cache key automatically after any changes in the product model.
+        """
+        cache.delete('product_objects')
+
+    def desc_snippet(self):
+        """Return snippet for description fields."""
+        truncated_desc = Truncator(self.description).words(12)
+        return truncated_desc
 
     def __str__(self):
         return self.name
@@ -222,23 +207,26 @@ class ProductType(TimeStamp):
     """
     This class defines attributes of the ProductType model.
     """
-    name = models.CharField(_('product name'), max_length=None)
+    name = models.CharField(
+        _('product type name'),
+        max_length=None,
+        unique=True
+    )
     slug = AutoSlugField(
         populate_from='name',
+        db_index=True,
         editable=False,
         always_update=True
     )
-    description = models.TextField(
-        _('description'),
-        null=True,
-        blank=True
-    )
-    discount = models.IntegerField(_('discount'), default=0)
+    discount = models.PositiveIntegerField(_('discount'), default=0)
     attribute = models.ManyToManyField(
         Attribute,
         related_name='product_type_attribute',
         through='ProductTypeAttribute'
     )
+    is_active = models.BooleanField(default=True)
+
+    objects = Active.as_manager()
 
     def __str__(self):
         return self.name

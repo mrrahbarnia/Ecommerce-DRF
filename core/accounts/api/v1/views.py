@@ -76,7 +76,7 @@ class ResendOtpApiView(generics.GenericAPIView):
         return Response(
             {'detail': _(
                 'A new OTP(one time password) generated and sent for you.'
-            )}
+            )}, status=status.HTTP_200_OK
         )
 
 

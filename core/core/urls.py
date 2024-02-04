@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/v1/accounts/', include('accounts.api.v1.urls')),
 
     # ============ Product app ============ #
-    path('api/v1/product/', include('product.api.v1.urls')),
+    path('product/api/v1/', include('product.api.v1.urls')),
 
     # ============ Django debug toolbar URL ============ #
     path("__debug__/", include("debug_toolbar.urls")),

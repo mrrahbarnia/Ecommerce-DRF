@@ -6,7 +6,6 @@ from django.contrib import admin
 from .models import (
     Product,
     Brand,
-    Category,
     ProductType,
     ProductImage,
     Attribute,
@@ -15,6 +14,9 @@ from .models import (
     ProductAttributeValue
 )
 
+class ProductImageAdmin(admin.TabularInline):
+    model = ProductImage
+
 
 class ProductAttributeValueInline(admin.TabularInline):
     model = ProductAttributeValue
@@ -22,7 +24,7 @@ class ProductAttributeValueInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [ProductAttributeValueInline]
+    inlines = [ProductAttributeValueInline, ProductImageAdmin]
 
 
 class AttributeValueInline(admin.TabularInline):
@@ -35,10 +37,10 @@ class AttributeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Brand)
-admin.site.register(Category)
+
 # admin.site.register(Attribute)
-# admin.site.register(AttributeValue)
+admin.site.register(AttributeValue)
 admin.site.register(ProductType)
-admin.site.register(ProductImage)
+# admin.site.register(ProductImage)
 admin.site.register(ProductTypeAttribute)
 # admin.site.register(ProductAttributeValue)

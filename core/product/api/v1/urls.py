@@ -1,11 +1,16 @@
 """
 URL's for Accounts API's.
 """
-# from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-# from . import views
+from . import views
 
+router = DefaultRouter()
+
+router.register('product', views.ProductApiViewSet, basename='product')
+router.register('brand', views.BrandApiViewSet, basename='brand')
+router.register('type', views.ProductTypeApiViewSet, basename='product-type')
 
 urlpatterns = [
-
 ]
+urlpatterns += router.urls
