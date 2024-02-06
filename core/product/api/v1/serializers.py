@@ -46,11 +46,11 @@ class ProductTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductType
-        fields = ['name', 'discount','attribute']
+        fields = ['name', 'discount', 'attribute']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['attribute_names']= []
+        data['attribute_names'] = []
         attributes = data.pop('attribute')
         for attribute in attributes:
             data['attribute_names'].append(attribute['name'])
@@ -68,7 +68,7 @@ class ProductTypeSerializer(serializers.ModelSerializer):
         product_type_obj = ProductType.objects.create(**validated_data)
         self._get_or_create_attributes(attributes, product_type_obj)
         return product_type_obj
-    
+
     def update(self, instance, validated_data):
         attributes = validated_data.pop('attribute', None)
         if attributes:
@@ -90,6 +90,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class AttributeValueSerializer(serializers.ModelSerializer):
     attribute = serializers.CharField(source='attribute.name')
+
     class Meta:
         model = AttributeValue
         fields = ['attribute', 'value']
@@ -142,7 +143,9 @@ class ProductSerializer(serializers.ModelSerializer):
         attributes_values = {}
         attr_values = data.pop('attribute_value')
         for attribute_value in attr_values:
-            attributes_values.update({attribute_value['attribute']: attribute_value['value']})
+            attributes_values.update(
+                {attribute_value['attribute']: attribute_value['value']}
+            )
         data.update({'specifications': attr_values})
         return data
 
@@ -187,7 +190,9 @@ class ProductSerializer(serializers.ModelSerializer):
         )
 
         product_obj = Product.objects.create(
-            brand=brand_obj[0], product_type=product_type_obj[0], **validated_data
+            brand=brand_obj[0],
+            product_type=product_type_obj[0],
+            **validated_data
         )
 
         if attribute_values is not []:
@@ -198,14 +203,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
         return product_obj
 
-
     def update(self, instance, validated_data):
         brand_name = validated_data.pop('brand', None)
         product_type_name = validated_data.pop('product_type', None)
         attribute_values = validated_data.pop('attribute_value', None)
         product_images = validated_data.pop('uploaded_images', None)
 
-        instance = super(ProductSerializer, self).update(instance, validated_data)
+        instance = super(ProductSerializer, self).update(
+            instance, validated_data
+        )
         if brand_name:
             try:
                 brand_obj = Brand.objects.get(name=brand_name)

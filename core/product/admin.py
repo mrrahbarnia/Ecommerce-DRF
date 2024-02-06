@@ -14,8 +14,10 @@ from .models import (
     ProductAttributeValue
 )
 
+
 class ProductImageAdmin(admin.TabularInline):
     model = ProductImage
+
 
 @admin.register(ProductAttributeValue)
 class ProductAttributeValueAdmin(admin.ModelAdmin):

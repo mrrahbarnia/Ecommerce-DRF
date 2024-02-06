@@ -12,8 +12,12 @@ class ProductFilter(filters.FilterSet):
     """
     min_price = filters.NumberFilter(field_name='price', lookup_expr='gte')
     max_price = filters.NumberFilter(field_name='price', lookup_expr='lte')
-    brand = filters.CharFilter(field_name='brand__slug', lookup_expr='icontains')
-    product_type = filters.CharFilter(field_name='product_type__slug', lookup_expr='icontains')
+    brand = filters.CharFilter(
+        field_name='brand__slug', lookup_expr='icontains'
+    )
+    product_type = filters.CharFilter(
+        field_name='product_type__slug', lookup_expr='icontains'
+    )
 
     class Meta:
         model = Product

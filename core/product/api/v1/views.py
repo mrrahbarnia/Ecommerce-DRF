@@ -56,7 +56,6 @@ class ProductApiViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-
     def get_queryset(self):
         """Returning queryset based on cached data."""
         queryset = cache.get('product_objects')
@@ -98,7 +97,9 @@ class ProductApiViewSet(viewsets.ModelViewSet):
         detail=False,
         url_path=r'product-type/(?P<product_type_slug>[\w-]+)'
     )
-    def product_list_with_specific_product_type_slug(self, request, product_type_slug=None):
+    def product_list_with_specific_product_type_slug(
+        self, request, product_type_slug=None
+    ):
         """Listing products which belong to a specific product type."""
         filtered_queryset = self.get_queryset().filter(
             product_type__slug__icontains=product_type_slug
@@ -115,7 +116,9 @@ class ProductApiViewSet(viewsets.ModelViewSet):
         detail=False,
         url_path=r'product-slug/(?P<product_slug>[\w-]+)'
     )
-    def product_list_with_specific_product_slug(self, request, product_slug=None):
+    def product_list_with_specific_product_slug(
+        self, request, product_slug=None
+    ):
         """Listing products which contains entered slug."""
         filtered_queryset = self.get_queryset().filter(
             slug__icontains=product_slug
@@ -126,7 +129,7 @@ class ProductApiViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_200_OK
         )
-    
+
     @action(
         methods=['GET'],
         detail=False,

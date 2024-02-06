@@ -183,13 +183,13 @@ class Product(LifecycleModel, TimeStamp):
     )
 
     objects = CustomManager()
-    
 
     @hook(AFTER_SAVE)
     @hook(AFTER_DELETE)
     def invalid_cache(self):
         """
-        Invalidating cache key automatically after any changes in the product model.
+        Invalidating cache key automatically
+        after any changes in the product model.
         """
         cache.delete('product_objects')
 
