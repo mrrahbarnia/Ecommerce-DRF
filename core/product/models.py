@@ -93,12 +93,7 @@ class ProductImage(TimeStamp):
         _('product image'),
         upload_to=product_img_file_path
     )
-    alt_text = models.CharField(
-        _('alternative text'),
-        max_length=None,
-        null=True,
-        blank=True,
-    )
+    # Order field for using image number 1 for base image in Front-End
     order = OrderField(unique_for_field='product', blank=True)
 
     def clean(self, exclude=None):
@@ -148,7 +143,11 @@ class Product(LifecycleModel, TimeStamp):
     """
     This class defines attributes of the Product model.
     """
-    name = models.CharField(_('product name'), max_length=None)
+    name = models.CharField(
+        _('product name'),
+        max_length=None,
+        unique=True
+    )
     slug = AutoSlugField(
         populate_from='name',
         db_index=True,
@@ -165,6 +164,7 @@ class Product(LifecycleModel, TimeStamp):
     stock = models.IntegerField(_('stock quantity'), default=0)
     price = models.DecimalField(_('price'), max_digits=20, decimal_places=3)
     discount = models.PositiveIntegerField(_('discount'), default=0)
+    views = models.PositiveIntegerField(_('views'), default=0)
     brand = models.ForeignKey(
         Brand,
         on_delete=models.PROTECT,
@@ -183,7 +183,6 @@ class Product(LifecycleModel, TimeStamp):
     )
 
     objects = CustomManager()
-    # objects = Active.as_manager()
     
 
     @hook(AFTER_SAVE)

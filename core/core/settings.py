@@ -148,9 +148,6 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# OTP configuration
-# OTP_EXPIRY_FROM_NOW = os.environ.get('OTP_EXPIRY_FROM_NOW', 3)
-
 # Validators config
 MAX_PROFILE_IMAG_SIZE_MB = os.environ.get('MAX_PROFILE_IMAG_SIZE_MB', 5)
 

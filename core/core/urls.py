@@ -26,7 +26,7 @@ urlpatterns = [
     # ============ CICD Health Check ============ #
     path('health-check/', HealthCheck.as_view()),
     # ============ Accounts app ============ #
-    path('api/v1/accounts/', include('accounts.api.v1.urls')),
+    path('auth/api/v1/', include('accounts.api.v1.urls')),
 
     # ============ Product app ============ #
     path('product/api/v1/', include('product.api.v1.urls')),

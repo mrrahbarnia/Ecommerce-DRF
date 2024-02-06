@@ -17,14 +17,17 @@ from .models import (
 class ProductImageAdmin(admin.TabularInline):
     model = ProductImage
 
-
-class ProductAttributeValueInline(admin.TabularInline):
+@admin.register(ProductAttributeValue)
+class ProductAttributeValueAdmin(admin.ModelAdmin):
     model = ProductAttributeValue
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [ProductAttributeValueInline, ProductImageAdmin]
+    inlines = [
+        # ProductAttributeValueInline,
+        ProductImageAdmin
+    ]
 
 
 class AttributeValueInline(admin.TabularInline):
