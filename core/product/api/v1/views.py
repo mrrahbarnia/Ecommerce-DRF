@@ -44,9 +44,20 @@ class ProductApiViewSet(viewsets.ModelViewSet):
     filterset_class = ProductFilter
     lookup_field = 'sku'
 
+    def list(self, request, *args, **kwargs):
+        """
+        Listing products...
+        Can using filtering methods based on:
+        1-Brand-slug => icontains
+        2-Product_type_slug => icontains
+        3-Specific price range with min_price and max_price
+        """
+        return super().list(request, *args, **kwargs)
+
     def retrieve(self, request, sku=None, *args, **kwargs):
         """
-        Overriding retrieve method for increasing products views.
+        Retrieve a specific product with assigned
+        sku and increasing views after each request.
         """
         obj = get_object_or_404(self.get_queryset(), sku=sku)
         obj.views += 1
@@ -81,8 +92,13 @@ class ProductApiViewSet(viewsets.ModelViewSet):
         detail=False,
         url_path=r'brand/(?P<brand_slug>[\w-]+)'
     )
-    def product_list_with_specific_brand_slug(self, request, brand_slug=None):
-        """Listing products which belong to a specific brand."""
+    def product_list_with_specific_brand_slug(
+        self, request, brand_slug=None
+    ):
+        """
+        Listing products with assigned brand_slug...
+        retrieving policy => icontains
+        """
         filtered_queryset = self.get_queryset().filter(
             brand__slug__icontains=brand_slug)
         serializer = self.serializer_class(
@@ -100,7 +116,10 @@ class ProductApiViewSet(viewsets.ModelViewSet):
     def product_list_with_specific_product_type_slug(
         self, request, product_type_slug=None
     ):
-        """Listing products which belong to a specific product type."""
+        """
+        Listing products with assigned product_type_slug...
+        retrieving policy => icontains
+        """
         filtered_queryset = self.get_queryset().filter(
             product_type__slug__icontains=product_type_slug
         )
