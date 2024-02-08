@@ -72,9 +72,6 @@ class User(
     )
     used_referral_code = models.BooleanField(default=False)
 
-    # otp = models.CharField(max_length=6, blank=True)
-    # otp_expiry = models.DateTimeField(blank=True, null=True)
-
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)

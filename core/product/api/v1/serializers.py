@@ -16,12 +16,15 @@ from ...models import (
 
 class BrandSerializer(serializers.ModelSerializer):
     """Serializing the Brand model."""
+    owner = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
     description_snippet = serializers.ReadOnlyField(source='desc_snippet')
 
     class Meta:
         model = Brand
         fields = [
-            'name', 'discount', 'description',
+            'owner', 'name', 'discount', 'description',
             'description_snippet',
         ]
 
@@ -42,11 +45,15 @@ class AttributeSerializer(serializers.ModelSerializer):
 
 
 class ProductTypeSerializer(serializers.ModelSerializer):
+    """Serializing the ProductType model."""
+    owner = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
     attribute = AttributeSerializer(many=True, required=False)
 
     class Meta:
         model = ProductType
-        fields = ['name', 'discount', 'attribute']
+        fields = ['owner', 'name', 'discount', 'attribute']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -97,7 +104,11 @@ class AttributeValueSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-
+    """Serializing the Product model
+    and some nested serializers."""
+    owner = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
     brand = serializers.CharField(
         source='brand.name', required=False
     )
@@ -126,7 +137,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'name', 'description', 'description_snippet', 'sku',
+            'owner', 'name', 'description', 'description_snippet', 'sku',
             'stock', 'price', 'discount', 'views', 'brand', 'brand_url',
             'product_type', 'product_type_url', 'attribute_value',
             'images', 'absolute_url', 'uploaded_images'

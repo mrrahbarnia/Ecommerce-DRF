@@ -16,7 +16,6 @@ from django_lifecycle import (
     AFTER_DELETE,
     AFTER_SAVE
 )
-
 from autoslug import AutoSlugField
 
 from .fields import OrderField
@@ -50,6 +49,10 @@ class Brand(TimeStamp):
     """
     This class defines attributes of the Brand model.
     """
+    owner = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        related_name='brands', null=True
+    )
     name = models.CharField(
         _('brand name'),
         max_length=None,
@@ -143,6 +146,10 @@ class Product(LifecycleModel, TimeStamp):
     """
     This class defines attributes of the Product model.
     """
+    owner = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        related_name='products', null=True
+    )
     name = models.CharField(
         _('product name'),
         max_length=None,
@@ -206,6 +213,10 @@ class ProductType(TimeStamp):
     """
     This class defines attributes of the ProductType model.
     """
+    owner = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        related_name='product_types', null=True
+    )
     name = models.CharField(
         _('product type name'),
         max_length=None,

@@ -3,6 +3,7 @@ Custom command for creating fake products with Faker module.
 """
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
+from django.contrib.auth import get_user_model
 from faker import Faker
 
 from ...models import (
@@ -14,6 +15,8 @@ from ...models import (
     AttributeValue
 )
 
+User = get_user_model()
+
 
 class Command(BaseCommand):
     """
@@ -22,6 +25,10 @@ class Command(BaseCommand):
     """
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
+        self.user = User.objects.create_superuser(
+            phone_number='09131111111',
+            password='M13431344'
+        )
         self.fake = Faker()
 
     def handle(self, *args, **options):
@@ -29,10 +36,14 @@ class Command(BaseCommand):
         for _ in range(50):
             try:
                 brand_name = self.fake.first_name()
-                brand_obj = Brand.objects.create(name=brand_name)
+                brand_obj = Brand.objects.create(
+                    owner=self.user,
+                    name=brand_name
+                )
 
                 product_type_name = self.fake.first_name()
                 product_type_obj = ProductType.objects.create(
+                    owner=self.user,
                     name=product_type_name
                 )
 
@@ -53,6 +64,7 @@ class Command(BaseCommand):
                 )
 
                 sample_product = Product.objects.create(
+                    owner=self.user,
                     name=self.fake.first_name(),
                     stock=self.fake.pyint(min_value=1, max_value=300),
                     price=self.fake.pydecimal(
