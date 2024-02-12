@@ -43,9 +43,6 @@ class AttributeAdmin(admin.ModelAdmin):
 
 admin.site.register(Brand)
 
-# admin.site.register(Attribute)
 admin.site.register(AttributeValue)
 admin.site.register(ProductType)
-# admin.site.register(ProductImage)
 admin.site.register(ProductTypeAttribute)
-# admin.site.register(ProductAttributeValue)

@@ -25,25 +25,27 @@ class Command(BaseCommand):
     """
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
-        self.user = User.objects.create_superuser(
-            phone_number='09131111111',
-            password='M13431344'
-        )
         self.fake = Faker()
 
     def handle(self, *args, **options):
 
         for _ in range(50):
             try:
+                user = User.objects.create_superuser(
+                    phone_number=self.fake.pyint(
+                        min_value=11111111111, max_value=99999999999
+                    ),
+                    password='M13431344'
+                )
                 brand_name = self.fake.first_name()
                 brand_obj = Brand.objects.create(
-                    owner=self.user,
+                    owner=user,
                     name=brand_name
                 )
 
                 product_type_name = self.fake.first_name()
                 product_type_obj = ProductType.objects.create(
-                    owner=self.user,
+                    owner=user,
                     name=product_type_name
                 )
 
@@ -64,7 +66,7 @@ class Command(BaseCommand):
                 )
 
                 sample_product = Product.objects.create(
-                    owner=self.user,
+                    owner=user,
                     name=self.fake.first_name(),
                     stock=self.fake.pyint(min_value=1, max_value=300),
                     price=self.fake.pydecimal(

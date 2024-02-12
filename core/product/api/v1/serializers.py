@@ -147,7 +147,7 @@ class ProductSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         request = self.context.get('request', None)
         if request.parser_context.get('kwargs').get('sku'):
-            pass
+            data.pop('absolute_url')
         else:
             data.pop('description')
 
